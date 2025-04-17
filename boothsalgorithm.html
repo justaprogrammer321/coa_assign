@@ -6,35 +6,35 @@
   <title>Booth's Algorithm</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans">
-  <div class="min-h-screen flex items-center justify-center p-6">
-    <div class="bg-white shadow-xl rounded-xl w-full max-w-6xl p-6">
-      <h1 class="text-3xl font-bold text-center text-gray-700 mb-6">Booth's Algorithm</h1>
+<body class="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen flex items-center justify-center p-6">
+  <div class="bg-white shadow-2xl rounded-3xl w-full max-w-7xl flex flex-col p-10 space-y-10">
+    <h1 class="text-4xl font-extrabold text-center text-blue-800">Booth's Algorithm Visualizer</h1>
 
-      <div class="flex flex-col lg:flex-row gap-6">
-        <!-- Input Section -->
-        <div class="lg:w-1/2 space-y-4">
-          <div>
-            <label for="multiplicand" class="block text-sm font-medium text-gray-600">Multiplicand (Integer):</label>
-            <input type="number" id="multiplicand" class="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none" />
-          </div>
-
-          <div>
-            <label for="multiplier" class="block text-sm font-medium text-gray-600">Multiplier (Integer):</label>
-            <input type="number" id="multiplier" class="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none" />
-          </div>
-
-          <button onclick="runBooth()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300">
-            Run Booth's Algorithm
-          </button>
+    <div class="grid lg:grid-cols-2 gap-8">
+      <!-- Input Form -->
+      <div class="space-y-6">
+        <div>
+          <label for="multiplicand" class="block text-lg font-medium text-gray-700">Multiplicand:</label>
+          <input type="number" id="multiplicand" placeholder="Enter Multiplicand"
+            class="mt-2 w-full px-5 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700" />
         </div>
 
-        <!-- Output Section -->
-        <div class="lg:w-1/2">
-          <label class="block text-sm font-medium text-gray-600 mb-1">Output:</label>
-          <div id="output" class="bg-gray-50 border border-blue-100 p-4 rounded-lg whitespace-pre-wrap text-sm font-mono overflow-auto h-full max-h-[500px]">
-            Result will appear here...
-          </div>
+        <div>
+          <label for="multiplier" class="block text-lg font-medium text-gray-700">Multiplier:</label>
+          <input type="number" id="multiplier" placeholder="Enter Multiplier"
+            class="mt-2 w-full px-5 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700" />
+        </div>
+
+        <button onclick="runBooth()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300">
+          Run Booth's Algorithm
+        </button>
+      </div>
+
+      <!-- Output Section -->
+      <div class="overflow-auto max-h-[500px]">
+        <label class="block text-lg font-medium text-gray-700 mb-3">Step-by-Step Output:</label>
+        <div id="outputTable" class="overflow-x-auto border border-blue-200 rounded-lg shadow-sm bg-white">
+          <!-- Table will be inserted here -->
         </div>
       </div>
     </div>
@@ -64,53 +64,97 @@
       return [shifted.slice(0, A.length), shifted.slice(A.length, A.length + Q.length), shifted.slice(-1)];
     }
 
-    function booth(m, q) {
+    function boothSteps(m, q) {
       const n = Math.max(m.toString(2).length, q.toString(2).length) + 1;
-      let A = toBinary(m, n);
-      let S = toBinary(-m, n);
+      const M = toBinary(m, n);
+      const minusM = toBinary(-m, n);
       let Q = toBinary(q, n);
       let Q_1 = '0';
-      let ACC = '0'.repeat(n);
+      let A = '0'.repeat(n);
 
-      let steps = `Initial values:\nA = ${A}\nS = ${S}\nQ = ${Q}, Q-1 = ${Q_1}\n\n`;
+      const steps = [];
 
       for (let i = 0; i < n; i++) {
         const lastQ = Q[Q.length - 1];
-
-        steps += `Step ${i + 1}:\n`;
-        steps += `A = ${ACC}, Q = ${Q}, Q-1 = ${Q_1}\n`;
+        const op = (lastQ === '1' && Q_1 === '0')
+          ? 'A = A - M'
+          : (lastQ === '0' && Q_1 === '1')
+            ? 'A = A + M'
+            : 'No Operation';
 
         if (lastQ === '1' && Q_1 === '0') {
-          ACC = binaryAdd(ACC, S);
-          steps += `Q0 = 1, Q-1 = 0 -> A = A - M = ${ACC}\n`;
+          A = binaryAdd(A, minusM);
         } else if (lastQ === '0' && Q_1 === '1') {
-          ACC = binaryAdd(ACC, A);
-          steps += `Q0 = 0, Q-1 = 1 -> A = A + M = ${ACC}\n`;
+          A = binaryAdd(A, M);
         }
 
-        [ACC, Q, Q_1] = arithmeticRightShift(ACC, Q, Q_1);
-        steps += `After shift: A = ${ACC}, Q = ${Q}, Q-1 = ${Q_1}\n\n`;
+        const beforeShift = { step: i + 1, A, Q, Q_1, operation: op };
+
+        [A, Q, Q_1] = arithmeticRightShift(A, Q, Q_1);
+
+        steps.push({ ...beforeShift, A_after: A, Q_after: Q, Q1_after: Q_1 });
       }
 
-      const final = ACC + Q;
-      let decimalResult = parseInt(final, 2);
-      if (final[0] === '1') decimalResult -= Math.pow(2, final.length);
+      const final = A + Q;
+      let resultDecimal = parseInt(final, 2);
+      if (final[0] === '1') resultDecimal -= Math.pow(2, final.length);
 
-      steps += `Final Binary (A + Q): ${final}\n`;
-      steps += `Final Decimal Result: ${decimalResult}`;
-      return steps;
+      return { steps, finalBinary: final, finalDecimal: resultDecimal };
     }
 
     function runBooth() {
       const m = parseInt(document.getElementById("multiplicand").value);
       const q = parseInt(document.getElementById("multiplier").value);
+      const outputDiv = document.getElementById("outputTable");
+
       if (isNaN(m) || isNaN(q)) {
-        document.getElementById("output").innerText = "Enter valid integers.";
+        outputDiv.innerHTML = "<p class='text-red-600 p-4'>Please enter valid integers for both fields.</p>";
         return;
       }
 
-      const result = booth(m, q);
-      document.getElementById("output").innerText = result;
+      const { steps, finalBinary, finalDecimal } = boothSteps(m, q);
+
+      let html = `
+        <table class="min-w-full text-sm text-left">
+          <thead class="bg-blue-100 text-gray-800">
+            <tr>
+              <th class="px-4 py-2 border">Step</th>
+              <th class="px-4 py-2 border">Operation</th>
+              <th class="px-4 py-2 border">A (before)</th>
+              <th class="px-4 py-2 border">Q (before)</th>
+              <th class="px-4 py-2 border">Q-1 (before)</th>
+              <th class="px-4 py-2 border">A (after)</th>
+              <th class="px-4 py-2 border">Q (after)</th>
+              <th class="px-4 py-2 border">Q-1 (after)</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-700">
+      `;
+
+      steps.forEach(s => {
+        html += `
+          <tr class="hover:bg-blue-50">
+            <td class="px-4 py-2 border">${s.step}</td>
+            <td class="px-4 py-2 border">${s.operation}</td>
+            <td class="px-4 py-2 border">${s.A}</td>
+            <td class="px-4 py-2 border">${s.Q}</td>
+            <td class="px-4 py-2 border">${s.Q_1}</td>
+            <td class="px-4 py-2 border">${s.A_after}</td>
+            <td class="px-4 py-2 border">${s.Q_after}</td>
+            <td class="px-4 py-2 border">${s.Q1_after}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          <tr class="bg-purple-100 font-semibold">
+            <td colspan="8" class="px-4 py-3 text-center">Final Result (Binary): ${finalBinary} | Decimal: ${finalDecimal}</td>
+          </tr>
+        </tbody>
+        </table>
+      `;
+
+      outputDiv.innerHTML = html;
     }
   </script>
 </body>

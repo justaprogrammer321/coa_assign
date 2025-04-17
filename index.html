@@ -5,51 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CAO Assignments - Algorithms</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-
-  <!-- Hero Section -->
-  <section class="bg-blue-600 text-white py-20">
-    <div class="container mx-auto px-6 text-center">
-      <h1 class="text-5xl font-bold mb-4">Welcome to CAO Assignments</h1>
-      <p class="text-lg mb-8">Explore various algorithms covered in our assignments. Click on the tiles to learn more about each algorithm.</p>
-    </div>
-  </section>
-
-  <!-- Algorithm Links Section -->
-  <section id="algorithms" class="py-20 bg-white">
-    <div class="container mx-auto px-6 text-center">
-      <h2 class="text-4xl font-bold text-gray-800 mb-12">Explore Algorithms</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+<body class="bg-gray-50 text-gray-800">
+  
+  <!-- Algorithms Section -->
+  <section id="algorithms" class="py-20">
+    <div class="container mx-auto px-6">
+      <h2 class="text-4xl font-bold text-center text-gray-800 mb-12">Explore Algorithms</h2>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         
-        <!-- Option 1: Restoring Division -->
-        <div class="bg-gray-100 p-6 rounded-lg shadow-lg hover:bg-blue-100 transition duration-300 cursor-pointer">
-          <a href="restoring.html" class="text-2xl font-semibold text-gray-700 hover:text-blue-600">
-            Restoring Division Algorithm
-          </a>
-          <p class="text-gray-600 mt-2">Learn how the Restoring Division algorithm works with binary numbers.</p>
-        </div>
+        <!-- Restoring Division -->
+        <a href="restoring.html" class="group bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-transform transform hover:-translate-y-1 border border-gray-200">
+          <div class="flex items-center gap-4">
+            <div class="bg-blue-100 p-3 rounded-full">
+              <svg class="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M9 12h6m-3 -3v6m5 4H7a2 2 0 01-2-2V7a2 2 0 012-2h5l5 5v10a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 group-hover:text-blue-700">Restoring Division</h3>
+          </div>
+          <p class="mt-4 text-gray-600">Understand binary division using the traditional restoring approach.</p>
+        </a>
 
-        <!-- Option 2: Non-Restoring Division -->
-        <div class="bg-gray-100 p-6 rounded-lg shadow-lg hover:bg-blue-100 transition duration-300 cursor-pointer">
-          <a href="nonrestoring.html" class="text-2xl font-semibold text-gray-700 hover:text-blue-600">
-            Non-Restoring Division Algorithm
-          </a>
-          <p class="text-gray-600 mt-2">Discover the optimized version of the Restoring Division algorithm.</p>
-        </div>
+        <!-- Non-Restoring Division -->
+        <a href="nonrestoring.html" class="group bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-transform transform hover:-translate-y-1 border border-gray-200">
+          <div class="flex items-center gap-4">
+            <div class="bg-purple-100 p-3 rounded-full">
+              <svg class="w-6 h-6 text-purple-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 group-hover:text-purple-700">Non-Restoring Division</h3>
+          </div>
+          <p class="mt-4 text-gray-600">Learn an optimized version of division without restoring steps.</p>
+        </a>
 
-        <!-- Option 3: Booth's Algorithm -->
-        <div class="bg-gray-100 p-6 rounded-lg shadow-lg hover:bg-blue-100 transition duration-300 cursor-pointer">
-          <a href="boothsalgorithm.html" class="text-2xl font-semibold text-gray-700 hover:text-blue-600">
-            Booth's Algorithm
-          </a>
-          <p class="text-gray-600 mt-2">An efficient algorithm for signed multiplication.</p>
-        </div>
-        
+        <!-- Booth's Algorithm -->
+        <a href="boothsalgorithm.html" class="group bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-transform transform hover:-translate-y-1 border border-gray-200">
+          <div class="flex items-center gap-4">
+            <div class="bg-green-100 p-3 rounded-full">
+              <svg class="w-6 h-6 text-green-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M16 5H8a3 3 0 00-3 3v8a3 3 0 003 3h8a3 3 0 003-3V8a3 3 0 00-3-3z"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 group-hover:text-green-700">Booth's Algorithm</h3>
+          </div>
+          <p class="mt-4 text-gray-600">An efficient method for signed binary multiplication.</p>
+        </a>
+
       </div>
     </div>
   </section>
-
 
 </body>
 </html>

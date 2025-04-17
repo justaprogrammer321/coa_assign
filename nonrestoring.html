@@ -3,38 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Non-Restoring Division Algorithm</title>
+  <title>Non-Restoring Division (Signed)</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
   <div class="min-h-screen flex items-center justify-center p-6">
     <div class="bg-white shadow-xl rounded-xl w-full max-w-6xl p-6">
-      <h1 class="text-3xl font-bold text-center text-gray-700 mb-6">Non-Restoring Division Algorithm</h1>
+      <h1 class="text-4xl font-extrabold text-center text-blue-800">Restoring Division Algorithm</h1>
+
 
       <div class="flex flex-col lg:flex-row gap-6">
         <!-- Input Section -->
         <div class="lg:w-1/2 space-y-4">
           <div>
-            <label for="multiplicand" class="block text-sm font-medium text-gray-600">Dividend (Integer):</label>
+            <label for="multiplicand" class="block text-sm font-medium text-gray-600">Dividend </label>
             <input type="number" id="multiplicand" class="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none" />
           </div>
 
           <div>
-            <label for="multiplier" class="block text-sm font-medium text-gray-600">Divisor (Integer):</label>
+            <label for="multiplier" class="block text-sm font-medium text-gray-600">Divisor </label>
             <input type="number" id="multiplier" class="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none" />
           </div>
 
           <button onclick="runDivision()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300">
-            Run Non-Restoring Division
+             Non-Restoring Division
           </button>
         </div>
 
         <!-- Output Section -->
         <div class="lg:w-1/2">
-          <label class="block text-sm font-medium text-gray-600 mb-1">Output:</label>
-          <div id="output" class="bg-gray-50 border border-blue-100 p-4 rounded-lg whitespace-pre-wrap text-sm font-mono overflow-auto h-full max-h-[500px]">
-            Result will appear here...
+          <label class="block text-sm font-medium text-gray-600 mb-1">Step-wise Table Output:</label>
+          <div id="table-output" class="overflow-auto border rounded-lg bg-white max-h-[500px]">
+            <!-- Table dynamically generated -->
           </div>
+          <div id="final-result" class="mt-4 p-4 bg-blue-50 rounded-lg text-sm font-mono"></div>
         </div>
       </div>
     </div>
@@ -71,44 +73,38 @@
     }
 
     function nonRestoringDivision(dividend, divisor) {
-      const n = Math.max(dividend.toString(2).length, divisor.toString(2).length) + 1;
+      const n = Math.max(Math.abs(dividend).toString(2).length, Math.abs(divisor).toString(2).length) + 1;
       let A = '0'.repeat(n);
       let Q = toBinary(dividend, n);
       const M = toBinary(divisor, n);
-
-      let steps = `Initial values:\nA = ${A}\nQ = ${Q}\nM = ${M}\n\n`;
+      let steps = [];
 
       for (let i = 0; i < n; i++) {
-        steps += `Step ${i + 1}:\n`;
+        steps.push({ step: `${i + 1}`, A, Q, operation: 'Left shift' });
         [A, Q] = leftShift(A, Q);
-        steps += `After left shift:\nA = ${A}, Q = ${Q}\n`;
 
         if (A[0] === '0') {
           A = binarySub(A, M);
-          steps += `A was positive -> A = A - M = ${A}\n`;
+          steps.push({ step: `${i + 1}`, A, Q, operation: 'A = A - M' });
         } else {
           A = binaryAdd(A, M);
-          steps += `A was negative -> A = A + M = ${A}\n`;
+          steps.push({ step: `${i + 1}`, A, Q, operation: 'A = A + M' });
         }
 
-        Q = Q.slice(0, -1) + (A[0] === '0' ? '1' : '0');
-        steps += `Set Q0 = ${A[0] === '0' ? 1 : 0} => Q = ${Q}\n\n`;
+        const qbit = (A[0] === '0') ? '1' : '0';
+        Q = Q.slice(0, -1) + qbit;
+        steps.push({ step: `${i + 1}`, A, Q, operation: `Set Q0 = ${qbit}` });
       }
 
       if (A[0] === '1') {
         A = binaryAdd(A, M);
-        steps += `Final restoration: A = A + M = ${A}\n`;
+        steps.push({ step: `Final`, A, Q, operation: 'A = A + M (restoration)' });
       }
 
-      const quotient = Q;
-      const remainder = A;
-      const qDecimal = parseInt(quotient, 2);
-      const rDecimal = (A[0] === '1') ? parseInt(remainder, 2) - (1 << remainder.length) : parseInt(remainder, 2);
+      const qDecimal = parseInt(Q, 2) - ((Q[0] === '1') ? (1 << Q.length) : 0);
+      const rDecimal = parseInt(A, 2) - ((A[0] === '1') ? (1 << A.length) : 0);
 
-      steps += `Final Quotient (Q): ${quotient} = ${qDecimal}\n`;
-      steps += `Final Remainder (A): ${remainder} = ${rDecimal}\n`;
-
-      return steps;
+      return { steps, quotient: Q, remainder: A, qDecimal, rDecimal };
     }
 
     function runDivision() {
@@ -116,12 +112,43 @@
       const divisor = parseInt(document.getElementById("multiplier").value);
 
       if (isNaN(dividend) || isNaN(divisor) || divisor === 0) {
-        document.getElementById("output").innerText = "Enter valid integers (divisor ≠ 0).";
+        document.getElementById("table-output").innerHTML = `<div class="p-4 text-red-600">Please enter valid integers. Divisor must not be zero.</div>`;
+        document.getElementById("final-result").innerHTML = '';
         return;
       }
 
-      const result = nonRestoringDivision(dividend, divisor);
-      document.getElementById("output").innerText = result;
+      const { steps, quotient, remainder, qDecimal, rDecimal } = nonRestoringDivision(dividend, divisor);
+
+      // Create table
+      let tableHTML = `
+        <table class="min-w-full table-auto text-left text-sm">
+          <thead class="bg-blue-100 text-gray-700">
+            <tr>
+              <th class="px-4 py-2 border">Step</th>
+              <th class="px-4 py-2 border">A</th>
+              <th class="px-4 py-2 border">Q</th>
+              <th class="px-4 py-2 border">Operation</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      for (const step of steps) {
+        tableHTML += `
+          <tr class="border-t hover:bg-blue-50">
+            <td class="px-4 py-2 border">${step.step}</td>
+            <td class="px-4 py-2 border font-mono">${step.A}</td>
+            <td class="px-4 py-2 border font-mono">${step.Q}</td>
+            <td class="px-4 py-2 border">${step.operation}</td>
+          </tr>
+        `;
+      }
+
+      tableHTML += `</tbody></table>`;
+      document.getElementById("table-output").innerHTML = tableHTML;
+
+      // Final result
+      document.getElementById("final-result").innerText = `Final Quotient: ${quotient} = ${qDecimal}\nFinal Remainder: ${remainder} = ${rDecimal}`;
     }
   </script>
 </body>

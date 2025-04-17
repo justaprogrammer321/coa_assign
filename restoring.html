@@ -8,12 +8,13 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
   <div class="min-h-screen flex items-center justify-center p-6">
-    <div class="bg-white shadow-xl rounded-xl w-full max-w-6xl p-6">
-      <h1 class="text-3xl font-bold text-center text-gray-700 mb-6">Restoring Division Algorithm</h1>
+    <div class="bg-white shadow-xl rounded-xl w-full max-w-6xl p-8 space-y-6">
+      <h1 class="text-4xl font-extrabold text-center text-blue-800">Restoring Division Algorithm</h1>
+      
 
-      <div class="flex flex-col lg:flex-row gap-6">
-        <!-- Input Section -->
-        <div class="lg:w-1/2 space-y-4">
+      <!-- Input Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="space-y-4">
           <div>
             <label for="multiplicand" class="block text-sm font-medium text-gray-600">Dividend (Integer):</label>
             <input type="number" id="multiplicand" class="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none" />
@@ -30,10 +31,25 @@
         </div>
 
         <!-- Output Section -->
-        <div class="lg:w-1/2">
+        <div>
           <label class="block text-sm font-medium text-gray-600 mb-1">Output:</label>
-          <div id="output" class="bg-gray-50 border border-blue-100 p-4 rounded-lg whitespace-pre-wrap text-sm font-mono overflow-auto h-full max-h-[500px]">
-            Result will appear here...
+          <div class="overflow-x-auto border rounded-lg max-h-[500px] overflow-y-auto">
+            <table class="min-w-full table-auto text-sm text-left">
+              <thead class="bg-blue-100 sticky top-0">
+                <tr>
+                  <th class="px-4 py-2">Step</th>
+                  <th class="px-4 py-2">A</th>
+                  <th class="px-4 py-2">Q</th>
+                  <th class="px-4 py-2">Operation</th>
+                </tr>
+              </thead>
+              <tbody id="output" class="bg-white divide-y divide-gray-200">
+                <!-- Rows added dynamically -->
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-4 text-sm font-medium">
+            <p id="final-result" class="text-gray-700 whitespace-pre-wrap"></p>
           </div>
         </div>
       </div>
@@ -47,20 +63,18 @@
         : (Math.pow(2, bits) + n).toString(2).slice(-bits);
     }
 
-    function binarySub(a, b) {
-      let binB = twosComplement(b);
-      return binaryAdd(a, binB).slice(-a.length);
-    }
-
     function binaryAdd(a, b) {
-      let result = '';
-      let carry = 0;
+      let result = '', carry = 0;
       for (let i = a.length - 1; i >= 0; i--) {
         const sum = parseInt(a[i]) + parseInt(b[i]) + carry;
         result = (sum % 2) + result;
         carry = sum > 1 ? 1 : 0;
       }
       return result;
+    }
+
+    function binarySub(a, b) {
+      return binaryAdd(a, twosComplement(b)).slice(-a.length);
     }
 
     function twosComplement(bin) {
@@ -77,33 +91,54 @@
       return [combined.slice(0, A.length), combined.slice(A.length)];
     }
 
-    function restoringDivision(dividend, divisor) {
+    function runDivision() {
+      const dividend = parseInt(document.getElementById("multiplicand").value);
+      const divisor = parseInt(document.getElementById("multiplier").value);
+      const tableBody = document.getElementById("output");
+      const finalResult = document.getElementById("final-result");
+
+      tableBody.innerHTML = '';
+      finalResult.innerText = '';
+
+      if (isNaN(dividend) || isNaN(divisor)) {
+        finalResult.innerText = "Enter valid integers.";
+        return;
+      }
+
+      if (divisor === 0) {
+        finalResult.innerText = "Division by zero is undefined.";
+        return;
+      }
+
       let n = Math.max(Math.abs(dividend), Math.abs(divisor)).toString(2).length + 1;
       let Q = toBinary(Math.abs(dividend), n);
       let M = toBinary(Math.abs(divisor), n);
       let A = '0'.repeat(n);
 
-      let steps = `Initial values:\nA = ${A}\nQ = ${Q}\nM = ${M}\n\n`;
-
+      let step = 1;
       for (let i = 0; i < n; i++) {
-        steps += `Step ${i + 1}:\n`;
         [A, Q] = leftShift(A, Q);
-        steps += `Left Shift -> A = ${A}, Q = ${Q}\n`;
-
         let tempA = binarySub(A, M);
-        steps += `A = A - M = ${tempA}\n`;
+        let op = `Left Shift, A - M`;
 
         if (tempA[0] === '1') {
           Q = Q.slice(0, -1) + '0';
-          A = binaryAdd(tempA, M); // Restore A
-          steps += `Negative A -> Restore A = ${A}, Q = ${Q}\n`;
+          A = binaryAdd(tempA, M);
+          op += ` → A < 0, Restore A, Q₀=0`;
         } else {
           Q = Q.slice(0, -1) + '1';
           A = tempA;
-          steps += `Positive A -> Keep A = ${A}, Q = ${Q}\n`;
+          op += ` → A ≥ 0, Keep A, Q₀=1`;
         }
 
-        steps += '\n';
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="px-4 py-2">Step ${step++}</td>
+          <td class="px-4 py-2 font-mono">${A}</td>
+          <td class="px-4 py-2 font-mono">${Q}</td>
+          <td class="px-4 py-2">${op}</td>
+        `;
+        tableBody.appendChild(row);
       }
 
       let quotient = parseInt(Q, 2);
@@ -116,28 +151,7 @@
         remainder = -remainder;
       }
 
-      steps += `Final Quotient (Binary): ${Q} => Decimal: ${quotient}\n`;
-      steps += `Final Remainder (Binary): ${A} => Decimal: ${remainder}`;
-
-      return steps;
-    }
-
-    function runDivision() {
-      const dividend = parseInt(document.getElementById("multiplicand").value);
-      const divisor = parseInt(document.getElementById("multiplier").value);
-
-      if (isNaN(dividend) || isNaN(divisor)) {
-        document.getElementById("output").innerText = "Enter valid integers.";
-        return;
-      }
-
-      if (divisor === 0) {
-        document.getElementById("output").innerText = "Division by zero is undefined.";
-        return;
-      }
-
-      const result = restoringDivision(dividend, divisor);
-      document.getElementById("output").innerText = result;
+      finalResult.innerText = `Final Quotient: ${quotient}\nFinal Remainder: ${remainder}`;
     }
   </script>
 </body>
